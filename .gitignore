@@ -53,3 +53,6 @@ dkms.conf
 
 # Makefile
 makefile
+.vscode/c_cpp_properties.json
+
+.vscode/settings.json
