@@ -4,6 +4,11 @@
  * @brief Programme principal permettant la gestion d'un train.
  * Dans un premier temps, le train récupère sa trajectoire enregistrée dans un fichier texte.
  * En suite, un thread est créé pour gérer les déplacements du train.
+ * - Faire des demandes d'autorisation au RBC
+ * - Transmettre son itinéraire au RBC
+ * - Odométrie + transmettre au RBC
+ * - Recaliber l'odométrie au passage sur une balise
+ * - Gérer sa vitesse (autorisation)
  * @version 0.1
  * @date 2024-11-15
  * 
