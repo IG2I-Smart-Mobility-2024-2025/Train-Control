@@ -1,17 +1,17 @@
-#ifndef TRAIN_UTILS_H
-#define TRAIN_UTILS_H
+#ifndef TRAIN_H
+#define TRAIN_H
 
 // Includes
-#include <libstd.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Structs
 
 typedef struct {
     int size;           // Number of steps
     char* filename;     // Filename of the course
-    char* steps;        // Steps of the course
+    char** steps;       // Steps of the course
     int current_step;   // Current step of the course
     int repeat;         // Number of times the course is repeated
 } Course_t;
@@ -30,11 +30,10 @@ typedef struct {
     Course_t course;        // Train course
 } Train_t;
 
-// Macros
-
+// MACROS
 #define COURSE_SIZE(a) (a)->course.size
 #define COURSE_FIRST_STEP(a) (a)->course.steps[0]
-#define COURSE_LAST_STEP(a) (a)->course.steps[COURSE_SIZE(a)-1]
+#define COURSE_LAST_STEP(a) (a)->course.steps[COURSE_SIZE((a))-1]
 
 // Functions
 
@@ -57,7 +56,7 @@ Train_t * train_init(int id, Position_t position);
  *                  -1 if an error occured
  *                  -2 if the repeat is invalid (the first and last steps are different)
  */
-int load_train_course(Train_t * train, char* filename, int repeat = 0);
+int load_train_course(Train_t * train, char* filename, int repeat);
 
 /**
  * @brief Delete a train
@@ -73,5 +72,12 @@ int delete_train(Train_t * train);
  * @param train Train to debug
  */
 void debug_train(Train_t * train);
+
+/**
+ * @brief Print the course of a train
+ * 
+ * @param train Train to print the course of
+ */
+void print_train_course (Train_t * train);
 
 #endif // "TRAIN_UTILS_H"

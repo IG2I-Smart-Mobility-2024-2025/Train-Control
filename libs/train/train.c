@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  * 
  */
-#include "train-utils.h"
+#include "train.h"
 
 /**
  * @brief Initialize a train
@@ -46,7 +46,7 @@ Train_t * train_init(int id, Position_t position) {
  *                  -1 if an error occured
  *                  -2 if the repeat is invalid (the first and last steps are different)
  */
-int load_train_course(Train_t * train, char* filename, int repeat = 0) {
+int load_train_course(Train_t * train, char* filename, int repeat) {
     // Check
     if (train == NULL || filename == NULL) return -1;
     
@@ -60,9 +60,13 @@ int load_train_course(Train_t * train, char* filename, int repeat = 0) {
         // Remove the newline character
         line[strcspn(line, "\n")] = 0;
         // Add the step to the course
-        train->course.steps = (char *) realloc(train->course.steps, (train->course.size + 1) * sizeof(char));
+        // train->course.steps is a char **
+        train->course.steps = (char **) realloc(train->course.steps, (train->course.size + 1) * sizeof(char *));
         if (train->course.steps == NULL) return -1;
-        train->course.steps[train->course.size] = line[0];
+        // train->course.steps[train->course.size] is a char *
+        train->course.steps[train->course.size] = (char *) malloc(sizeof(line));
+        if (train->course.steps[train->course.size] == NULL) return -1;
+        strcpy(train->course.steps[train->course.size], line);
         train->course.size++;
     }
     
@@ -72,8 +76,8 @@ int load_train_course(Train_t * train, char* filename, int repeat = 0) {
     // Close the file
     fclose(file);
 
-    // Set the repeat
-    if (repeat && strcomp(COURSE_FIRST_STEP(train), COURSE_LAST_STEP(train)) == 0)
+    // Set the repeat (last step must be the same as the first step)
+    if (repeat && strcmp(COURSE_FIRST_STEP(train), COURSE_LAST_STEP(train)) == 0)
         train->course.repeat = repeat;
     else
         return -2;
@@ -108,9 +112,19 @@ void debug_train(Train_t * train) {
     printf("Position: (%d, %d, %d)\n", train->position.x, train->position.y, train->position.z);
     printf("Speed: %d\n", train->speed);
     printf("Distance: %.2f\n", train->distance);
-    printf("Course: %s\n", train->course.steps);
     printf("Course current step: [%d] --> %s\n", train->course.current_step, train->course.steps[train->course.current_step]);
     printf("Course size: %d\n", train->course.size);
     printf("Course repeat: %d\n", train->course.repeat);
     printf("Course filename: %s\n", train->course.filename);
+}
+
+/**
+ * @brief Print the course of a train
+ * 
+ * @param train Train to print the course of
+ */
+void print_train_course (Train_t * train) {
+    for (int i = 0; i < train->course.size; i++) {
+        printf("Step %d: %s\n", i, train->course.steps[i]);
+    }
 }
