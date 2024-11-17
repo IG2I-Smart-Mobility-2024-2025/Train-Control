@@ -15,12 +15,15 @@ DIR_LIBS_TRAIN = $(DIR_LIBS)/train
 ARCHIVE= Train_control
 
 # General Rules
-all : $(DIR_BIN)/train_control.e
+all : directories $(DIR_BIN)/train_control.e
 
 clear :
 	rm -rf bin/*
 
 archive :
+
+directories :
+	mkdir -p $(DIR_BIN)
 
 # train_control
 $(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_SRC)/main.c
