@@ -21,7 +21,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
-#include "libs/train-utils/train-utils.h"
+#include "../libs/train/train.h"
 
 int main(int argc, char* argv[]) {
     // Vérification du nombre d'arguments
@@ -41,13 +41,19 @@ int main(int argc, char* argv[]) {
     }
 
     // Chargement de la trajectoire du train
-    if (load_train_course(train, fichier_trajectoire) != 0) {
-        printf("Erreur lors du chargement de la trajectoire du train\n");
-        return 1;
+    int res = load_train_course(train, fichier_trajectoire, 1);
+    switch(res) {
+        case -1:
+            printf("Erreur lors du chargement de la trajectoire\n");
+            return 1;
+        case -2:
+            printf("La trajectoire doit etre une boucle (la derniere etape doit etre la meme que la premiere)\n");
+            return 1;
     }
 
     // Test de debug
     debug_train(train);
+    print_train_course(train);
 
     return 0;
 }
