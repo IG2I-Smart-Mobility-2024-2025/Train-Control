@@ -31,9 +31,9 @@ directories :
 	mkdir -p $(DIR_BIN)
 
 # train_control
-$(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_BIN)/tcp_interface.o $(DIR_BIN)/canTrain.o $(DIR_LIBS_UNIRAIL_CAN)/canLinux.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_Utilitaire.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarStatusTrain.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarTrain.o $(DIR_SRC)/main.c
+$(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_BIN)/tcp_interface.o $(DIR_BIN)/canTrain.o $(DIR_BIN)/odometrie.o $(DIR_LIBS_UNIRAIL_CAN)/canLinux.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_Utilitaire.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarStatusTrain.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarTrain.o $(DIR_SRC)/main.c
 	@echo "--- Compiling train_control ---"
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ -lpthread
 
 # train
 $(DIR_BIN)/train.o : $(DIR_LIBS_TRAIN)/train.c $(DIR_LIBS_TRAIN)/train.h
