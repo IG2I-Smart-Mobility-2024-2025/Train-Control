@@ -1,7 +1,7 @@
 # Variables Compiler and Flags
 CC = gcc
 CFLAGS = -Wall -g
-LDFLAGS = -lm
+LDFLAGS = -lm -lpthread
 
 # Variables Directories
 DIR_BIN = bin
@@ -13,6 +13,7 @@ DIR_LIBS_TRAIN = $(DIR_LIBS)/train
 DIR_LIBS_COMM = $(DIR_LIBS)/communication
 DIR_LIBS_ODO = $(DIR_LIBS)/odometrie
 DIR_LIBS_CAN = $(DIR_LIBS)/can
+DIR_LIBS_MARVELMIND = $(DIR_LIBS)/marvelmind
 DIR_LIBS_UNIRAIL = $(DIR_LIBS)/unirail
 DIR_LIBS_UNIRAIL_CAN = $(DIR_LIBS)/unirail/CAN
 
@@ -31,9 +32,9 @@ directories :
 	mkdir -p $(DIR_BIN)
 
 # train_control
-$(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_BIN)/tcp_interface.o $(DIR_BIN)/canTrain.o $(DIR_BIN)/odometrie.o $(DIR_LIBS_UNIRAIL_CAN)/canLinux.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_Utilitaire.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarStatusTrain.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarTrain.o $(DIR_SRC)/main.c
+$(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_BIN)/tcp_interface.o $(DIR_BIN)/canTrain.o $(DIR_BIN)/odometrie.o $(DIR_LIBS_UNIRAIL_CAN)/canLinux.o $(DIR_BIN)/marvelmind.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_Utilitaire.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarStatusTrain.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarTrain.o $(DIR_SRC)/main.c
 	@echo "--- Compiling train_control ---"
-	$(CC) $(CFLAGS) $^ -o $@ -lpthread
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 # train
 $(DIR_BIN)/train.o : $(DIR_LIBS_TRAIN)/train.c $(DIR_LIBS_TRAIN)/train.h
@@ -48,6 +49,11 @@ $(DIR_BIN)/tcp_interface.o : $(DIR_LIBS_COMM)/tcp_interface.c $(DIR_LIBS_COMM)/c
 # odometrie
 $(DIR_BIN)/odometrie.o : $(DIR_LIBS_ODO)/odometrie.c $(DIR_LIBS_ODO)/odometrie.h
 	@echo "--- Compiling odometrie ---"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# marvelmind
+$(DIR_BIN)/marvelmind.o : $(DIR_LIBS_MARVELMIND)/marvelmind.c $(DIR_LIBS_MARVELMIND)/marvelmind.h
+	@echo "--- Compiling marvelmind ---"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # can
