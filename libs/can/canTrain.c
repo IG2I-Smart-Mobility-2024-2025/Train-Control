@@ -1,5 +1,7 @@
 #include "canTrain.h"
 
+t_TrainInfo train_can;
+
 void initCan(){
     // Definition du nom de l'interface can du raspberry pi. A controler au niveau systeme.
 	char *NomPort = "can0";

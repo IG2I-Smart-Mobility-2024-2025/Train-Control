@@ -27,7 +27,6 @@
 #include "../libs/can/canTrain.h"
 
 // Global variables
-t_TrainInfo train_can;
 
 int main(int argc, char* argv[]) {
     // Vérification du nombre d'arguments
