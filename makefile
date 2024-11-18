@@ -42,7 +42,7 @@ $(DIR_BIN)/tcp_interface.o : $(DIR_LIBS_COMM)/tcp_interface.c $(DIR_LIBS_COMM)/c
 	@echo "Compiling tcp_interface"
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# tcp_interface
+# can
 $(DIR_BIN)/canTrain.o : $(DIR_LIBS_CAN)/canTrain.c $(DIR_LIBS_CAN)/canTrain.h
 	@echo "Compiling can"
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -1,6 +1,10 @@
-#include "../Libs_Unirail/CAN/canLinux.h"
-#include "../Libs_Unirail/CAN/loco_Parametres.h"
+#ifndef CANTRAIN_H
+#define CANTRAIN_H
+
+#include "../unirail/CAN/canLinux.h"
+#include "../unirail/CAN/loco_Parametres.h"
 #include <pthread.h>
+#include <stdio.h>
 
 #define DISTANCE_SECU 20 
 
@@ -23,3 +27,5 @@ void initCan();
 int writeVitesseLimite(float vitesseLimite);
 int writeVitesseConsigne(unsigned int vitesse, unsigned char sense);
 void *lectureCan();
+
+#endif
