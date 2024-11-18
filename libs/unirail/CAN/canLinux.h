@@ -1,7 +1,7 @@
 #ifndef CANLINUX_H
 	#define CANLINUX_H
 #ifndef MC802
-	#define MC802 1
+	#define MC802 0
 #endif
 
 #if MC802 ==0

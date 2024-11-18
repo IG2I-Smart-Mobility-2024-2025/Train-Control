@@ -23,6 +23,7 @@
 #include <string.h>
 #include "../libs/train/train.h"
 #include "../libs/communication/communication.h"
+#include "../libs/odometrie/odometrie.h"
 #include "../libs/can/canTrain.h"
 
 int main(int argc, char* argv[]) {
@@ -88,10 +89,18 @@ int main(int argc, char* argv[]) {
     printf("Fail or pass ? %d\n", recv_train_mov_auth(socket, tma));
     printf("Length authorized : %2.f\n", tma->length);
 
+    // On lance le thread d'odométrie
+    pthread_t thread;
+    odometrie* odo = create_odometrie(NULL, NULL);
+    pthread_create(&thread, NULL, thread_odometrie, (void*) odo);
+
     while(1);
 
+    // On attend la fin du thread
+    pthread_join(thread, NULL);
+
     // Suppression du train
-    delete_train(train);
+    // delete_train(train);
     delete_train_info(ti);
     delete_train_mov_auth(tma);
     close(socket);
