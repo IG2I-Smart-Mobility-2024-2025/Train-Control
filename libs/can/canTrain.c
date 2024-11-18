@@ -55,22 +55,22 @@ void *lectureCan(){
         if(canLinux_receive(&recCanMsg, 1)){
             switch (recCanMsg.frame.id){
                 case MC_ID_SCHEDULEUR_MESURES :
-                    pthread_mutex_lock(&train.trainInfo_mutex);
-                    train.train.vit_mesuree= (int)MESCAN_GetData8(&recCanMsg, cdmc_vitesseMesuree);/** le nbre d'implusion envoyé ici est le nombre d'impulsion entre 2 mesures **/
-                    train.train.nb_impulsions+= train.train.vit_mesuree;
-                    train.train.distance= PAS_ROUE_CODEUSE * (train.train.nb_impulsions);
-                    train.train.vit_consigne= (float)MESCAN_GetData8(&recCanMsg, cdmc_vitesseConsigneInterne);
+                    pthread_mutex_lock(&train_can.trainInfo_mutex);
+                    train_can.train.vit_mesuree= (int)MESCAN_GetData8(&recCanMsg, cdmc_vitesseMesuree);/** le nbre d'implusion envoyé ici est le nombre d'impulsion entre 2 mesures **/
+                    train_can.train.nb_impulsions+= train_can.train.vit_mesuree;
+                    train_can.train.distance= PAS_ROUE_CODEUSE * (train_can.train.nb_impulsions);
+                    train_can.train.vit_consigne= (float)MESCAN_GetData8(&recCanMsg, cdmc_vitesseConsigneInterne);
 
                     //fprintf(stderr, "Actualisation: Postition courante : %lf cm, Vit: %d cm/s\n", train.train.distance, train.train.vit_mesuree);
-                    pthread_mutex_unlock(&train.trainInfo_mutex);
+                    pthread_mutex_unlock(&train_can.trainInfo_mutex);
                     break;
                 case MC_ID_EBTL2_RECEIVED : //balise
-                    pthread_mutex_lock(&train.trainInfo_mutex);
-                    train.train.nb_impulsions = 0;
+                    pthread_mutex_lock(&train_can.trainInfo_mutex);
+                    train_can.train.nb_impulsions = 0;
 
                     //fprintf(stderr, "\nBalise : %X", recCanMsg.frame.data5);
                     //fprintf(stderr, "Actualisation: Postition courante : %lf cm, Vit: %d cm/s\n\n", train.train.distance, train.train.vit_mesuree);
-                    pthread_mutex_unlock(&train.trainInfo_mutex);
+                    pthread_mutex_unlock(&train_can.trainInfo_mutex);
                     break;
                 default :
                     fprintf(stderr, "La trame lue a pour ID %X \n",recCanMsg.frame.id);
