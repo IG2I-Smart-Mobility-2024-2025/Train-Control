@@ -21,8 +21,6 @@ typedef struct s_TrainInfo{
     struct canOdo train;
 } t_TrainInfo;
 
-t_TrainInfo train_can;
-
 void initCan();
 int writeVitesseLimite(float vitesseLimite);
 int writeVitesseConsigne(unsigned int vitesse, unsigned char sense);
