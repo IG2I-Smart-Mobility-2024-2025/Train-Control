@@ -10,6 +10,7 @@ DIR_LIBS = libs
 
 # Variables Directories Libs
 DIR_LIBS_TRAIN = $(DIR_LIBS)/train
+DIR_LIBS_COMM = $(DIR_LIBS)/communication
 
 # Variables Files
 ARCHIVE= Train_control
@@ -26,13 +27,16 @@ directories :
 	mkdir -p $(DIR_BIN)
 
 # train_control
-$(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_SRC)/main.c
+$(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_BIN)/tcp_interface.o $(DIR_SRC)/main.c
 	@echo "--- Compiling train_control ---"
-	@echo "gcc $(CFLAGS) $^ -o $@"
-	@$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@
 
 # train
 $(DIR_BIN)/train.o : $(DIR_LIBS_TRAIN)/train.c $(DIR_LIBS_TRAIN)/train.h
 	@echo "--- Compiling train ---"
-	@echo "gcc -c $(CFLAGS) $< -o $@"
-	@$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# tcp_interface
+$(DIR_BIN)/tcp_interface.o : $(DIR_LIBS_COMM)/tcp_interface.c $(DIR_LIBS_COMM)/communication.h
+	@echo "Compiling tcp_interface"
+	$(CC) $(CFLAGS) -c $< -o $@

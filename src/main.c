@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "../libs/train/train.h"
+#include "../libs/communication/communication.h"
 
 int main(int argc, char* argv[]) {
     // Vérification du nombre d'arguments
@@ -42,6 +43,7 @@ int main(int argc, char* argv[]) {
 
     // Chargement de la trajectoire du train
     int res = load_train_course(train, fichier_trajectoire, 1);
+    // Gestion des erreurs
     switch(res) {
         case -1:
             printf("Erreur lors du chargement de la trajectoire\n");
@@ -54,6 +56,44 @@ int main(int argc, char* argv[]) {
     // Test de debug
     debug_train(train);
     print_train_course(train);
+
+    // On envoie une requete au RBC
+    printf("J'envoie une requete au RBC pour me deplacer\n");
+
+    // On configure la socket
+    int socket = init_client_socket("192.168.1.200");
+    if (!socket) {
+        printf("Erreur lors de la creation de la socket\n");
+        return 1;
+    }
+
+    // Structure train info pour connard
+    train_info * ti = create_train_info(
+        train->id,
+        train->course.steps_code[train->course.current_step],
+        0,
+        0,
+        train->course.steps_code,
+        train->course.size
+    );
+
+    print_train_info(ti);
+
+    // On envoie au RBC
+    printf("Fail or pass ? %d\n", send_train_info(socket, ti));
+
+    train_mov_auth* tma = create_train_mov_auth();
+
+    printf("Fail or pass ? %d\n", recv_train_mov_auth(socket, tma));
+    printf("Length authorized : %2.f\n", tma->length);
+
+    while(1);
+
+    // Suppression du train
+    delete_train(train);
+    delete_train_info(ti);
+    delete_train_mov_auth(tma);
+    close(socket);
 
     return 0;
 }
