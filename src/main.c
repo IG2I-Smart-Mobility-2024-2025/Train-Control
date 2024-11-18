@@ -23,6 +23,7 @@
 #include <string.h>
 #include "../libs/train/train.h"
 #include "../libs/communication/communication.h"
+#include "../libs/can/canTrain.h"
 
 int main(int argc, char* argv[]) {
     // Vérification du nombre d'arguments
