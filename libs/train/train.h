@@ -15,33 +15,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "../can/canTrain.h"
+#include "../common.h"
 
 // Structs
 
-typedef struct {
-    int size;           // Number of steps
-    char* filename;     // Filename of the course
-    char** steps;       // Steps of the course in "C..." format
-    int * steps_code;   // Steps of the course in "0x..." format
-    int current_step;   // Current step of the course
-    int repeat;         // Number of times the course is repeated
-} Course_t;
 
-typedef struct {
-    char id;                    // Train ID
-    int speed;                  // Train speed
-    Position_t position;        // Train position
-    float distance;             // Train distance [cm]
-    Course_t course;            // Train course
-    t_TrainInfo * train_can;    // Train information
-} Train_t;
-
-typedef struct {
-    int x;              // X position
-    int y;              // Y position
-    int z;              // Z position
-} Position_t;
 
 // MACROS
 #define COURSE_SIZE(a) (a)->course.size

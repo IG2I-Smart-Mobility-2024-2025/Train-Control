@@ -45,7 +45,7 @@ $(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_BIN)/tcp_interface.o $(DIR
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 # train
-$(DIR_BIN)/train.o : $(DIR_LIBS_TRAIN)/train.c $(DIR_LIBS_TRAIN)/train.h
+$(DIR_BIN)/train.o : $(DIR_LIBS_TRAIN)/train.c $(DIR_LIBS_TRAIN)/train.h $(DIR_LIBS)/common.h
 	@echo "--- Compiling train ---"
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -55,7 +55,7 @@ $(DIR_BIN)/tcp_interface.o : $(DIR_LIBS_COMM)/tcp_interface.c $(DIR_LIBS_COMM)/c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # odometrie
-$(DIR_BIN)/odometrie.o : $(DIR_LIBS_ODO)/odometrie.c $(DIR_LIBS_ODO)/odometrie.h
+$(DIR_BIN)/odometrie.o : $(DIR_LIBS_ODO)/odometrie.c $(DIR_LIBS_ODO)/odometrie.h $(DIR_LIBS)/common.h
 	@echo "--- Compiling odometrie ---"
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -65,7 +65,7 @@ $(DIR_BIN)/marvelmind.o : $(DIR_LIBS_MARVELMIND)/marvelmind.c $(DIR_LIBS_MARVELM
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # can
-$(DIR_BIN)/canTrain.o : $(DIR_LIBS_CAN)/canTrain.c $(DIR_LIBS_CAN)/canTrain.h
+$(DIR_BIN)/canTrain.o : $(DIR_LIBS_CAN)/canTrain.c $(DIR_LIBS_CAN)/canTrain.h $(DIR_LIBS)/common.h
 	@echo "--- Compiling can ---"
 	$(CC) $(CFLAGS) -c $< -o $@
 

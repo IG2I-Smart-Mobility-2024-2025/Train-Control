@@ -6,18 +6,12 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <math.h>
+
 #include "../train/train.h"
 #include "../marvelmind/marvelmind.h"
+#include "../common.h"
 
-typedef struct {
-    Position_t actual_position;
-    Position_t last_beacon_update;
-    float distance_last_update;
-    float total_distance_last_beacon;
-    struct MarvelmindHedge * hedge;
-    pthread_mutex_t mutex;
-    bool is_running;
-} odometrie;
+
 
 /**
  * @brief Create a odometrie object

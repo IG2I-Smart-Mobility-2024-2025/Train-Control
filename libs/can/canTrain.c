@@ -61,8 +61,7 @@ int writeVitesseConsigne(unsigned int vitesse, unsigned char sense){
 }
 
 void *lectureCan(void * args) {
-    //Definition d'une variable de type message can
-	
+    //Definition d'une variable de type message can	
     thread_args * arguments = (thread_args *) args;
     t_TrainInfo * train_can = arguments->train_info;
     odometrie * odo = arguments->odo;

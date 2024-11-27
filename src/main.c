@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
 
     // On lance le thread du CAN
     pthread_t thread_can;
-    thread_args args = {train, odo};
+    thread_args args = {train->train_can, odo};
     pthread_create(&thread_can, NULL, lectureCan, (void*) &args);
 
     while(1);
