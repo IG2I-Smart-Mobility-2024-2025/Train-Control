@@ -3,6 +3,7 @@
 
 #include "../unirail/CAN/canLinux.h"
 #include "../unirail/CAN/loco_Parametres.h"
+#include "../odometrie/odometrie.h"
 #include <pthread.h>
 #include <stdio.h>
 
@@ -21,9 +22,15 @@ typedef struct s_TrainInfo{
     struct canOdo train;
 } t_TrainInfo;
 
+typedef struct {
+	t_TrainInfo * train_info;
+	odometrie * odo;
+} thread_args;
+
+t_TrainInfo* create_train_can();
 void initCan();
 int writeVitesseLimite(float vitesseLimite);
 int writeVitesseConsigne(unsigned int vitesse, unsigned char sense);
-void *lectureCan();
+void *lectureCan(void * args);
 
 #endif

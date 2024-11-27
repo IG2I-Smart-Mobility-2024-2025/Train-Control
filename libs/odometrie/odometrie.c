@@ -19,6 +19,9 @@ odometrie* create_odometrie(char * ttyFile, void (*anyInputPacketCallback)()) {
         free(odo);
         return NULL;
     }
+    // Initialize the mutex
+    pthread_mutex_init(&odo->mutex, NULL);
+
     // Configure marvelmind hedge object
     odo->hedge->ttyFileName = ttyFile;
     odo->hedge->verbose = true;
@@ -80,6 +83,7 @@ void update_odometrie_distance(odometrie* odo) {
  * @param odo Odometrie object
  */
 void reset_odometrie(odometrie * odo) {
+    printf("Reset odometrie\n");
     odo->total_distance_last_beacon= 0;
     odo->last_beacon_update = odo->actual_position;
 }
@@ -93,16 +97,32 @@ void * thread_odometrie(void * arg) {
     odometrie * odo = (odometrie *) arg;
     while (odo->is_running) {
         // Wait for the mutex
-        sem_wait(&odo->mutex);
+        pthread_mutex_lock(&odo->mutex);
 
         // Update the odometrie
         update_odometrie_position(odo);
         update_odometrie_distance(odo);
         
         // Release the mutex
-        sem_post(&odo->mutex);
+        pthread_mutex_unlock(&odo->mutex);
+
+        // Debug
+        // debug_odometrie(odo);
         
         // Sleep for 100ms
         usleep(100000);
     }
+    return 0;
+}
+
+/**
+ * @brief Debug the odometrie object
+ * 
+ * @param odo Odometrie object
+ */
+void debug_odometrie(odometrie* odo) {
+    printf("Actual position : %d %d %d\n", odo->actual_position.x, odo->actual_position.y, odo->actual_position.z);
+    printf("Last beacon update : %d %d %d\n", odo->last_beacon_update.x, odo->last_beacon_update.y, odo->last_beacon_update.z);
+    printf("Distance last update : %2.f\n", odo->distance_last_update);
+    printf("Total distance last beacon : %2.f\n", odo->total_distance_last_beacon);
 }

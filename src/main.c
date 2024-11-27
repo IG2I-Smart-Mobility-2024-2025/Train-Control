@@ -26,8 +26,6 @@
 #include "../libs/odometrie/odometrie.h"
 #include "../libs/can/canTrain.h"
 
-// Global variables
-
 int main(int argc, char* argv[]) {
     // Vérification du nombre d'arguments
     if (argc != 2) {
@@ -92,14 +90,20 @@ int main(int argc, char* argv[]) {
     printf("Length authorized : %2.f\n", tma->length);
 
     // On lance le thread d'odométrie
-    pthread_t thread;
+    pthread_t thread_odo;
     odometrie* odo = create_odometrie(NULL, NULL);
-    pthread_create(&thread, NULL, thread_odometrie, (void*) odo);
+    pthread_create(&thread_odo, NULL, thread_odometrie, (void*) odo);
+
+    // On lance le thread du CAN
+    pthread_t thread_can;
+    thread_args args = {train, odo};
+    pthread_create(&thread_can, NULL, lectureCan, (void*) &args);
 
     while(1);
 
-    // On attend la fin du thread
-    pthread_join(thread, NULL);
+    // On attend la fin des threads
+    pthread_join(thread_odo, NULL);
+    pthread_join(thread_can, NULL);
 
     // Suppression du train
     // delete_train(train);

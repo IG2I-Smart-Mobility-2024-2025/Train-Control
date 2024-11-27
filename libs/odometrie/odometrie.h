@@ -4,6 +4,8 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <pthread.h>
+#include <math.h>
 #include "../train/train.h"
 #include "../marvelmind/marvelmind.h"
 
@@ -13,7 +15,7 @@ typedef struct {
     float distance_last_update;
     float total_distance_last_beacon;
     struct MarvelmindHedge * hedge;
-    sem_t mutex;
+    pthread_mutex_t mutex;
     bool is_running;
 } odometrie;
 
@@ -61,4 +63,10 @@ void reset_odometrie(odometrie * odo);
  */
 void * thread_odometrie(void * arg);
 
+/**
+ * @brief Debug the odometrie object
+ * 
+ * @param odo Odometrie object
+ */
+void debug_odometrie(odometrie* odo);
 #endif

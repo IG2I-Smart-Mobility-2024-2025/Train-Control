@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../can/canTrain.h"
 
 // Structs
 
@@ -28,18 +29,19 @@ typedef struct {
 } Course_t;
 
 typedef struct {
+    char id;                    // Train ID
+    int speed;                  // Train speed
+    Position_t position;        // Train position
+    float distance;             // Train distance [cm]
+    Course_t course;            // Train course
+    t_TrainInfo * train_can;    // Train information
+} Train_t;
+
+typedef struct {
     int x;              // X position
     int y;              // Y position
     int z;              // Z position
 } Position_t;
-
-typedef struct {
-    char id;                 // Train ID
-    int speed;              // Train speed
-    Position_t position;    // Train position
-    float distance;         // Train distance [cm]
-    Course_t course;        // Train course
-} Train_t;
 
 // MACROS
 #define COURSE_SIZE(a) (a)->course.size

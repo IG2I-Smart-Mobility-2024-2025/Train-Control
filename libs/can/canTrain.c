@@ -1,6 +1,17 @@
 #include "canTrain.h"
 
-t_TrainInfo train_can;
+// t_TrainInfo train_can;
+
+t_TrainInfo* create_train_can() {
+    t_TrainInfo* train_can = malloc(sizeof(t_TrainInfo));
+    pthread_mutex_init(&(train_can->trainInfo_mutex), NULL);
+    train_can->train.distance = 0;
+    train_can->train.vit_consigne = 0;
+    train_can->train.vit_mesuree = 0;
+    train_can->train.nb_impulsions = 0;
+    initCan();
+    return train_can;
+}
 
 void initCan(){
     // Definition du nom de l'interface can du raspberry pi. A controler au niveau systeme.
@@ -49,30 +60,41 @@ int writeVitesseConsigne(unsigned int vitesse, unsigned char sense){
 	return 	canLinux_transmit(CANLINUX_PRIORITY_HIGH, &consigneVitesse);
 }
 
-void *lectureCan(){
+void *lectureCan(void * args) {
     //Definition d'une variable de type message can
-	uCAN1_MSG recCanMsg;
+	
+    thread_args * arguments = (thread_args *) args;
+    t_TrainInfo * train_can = arguments->train_info;
+    odometrie * odo = arguments->odo;
+
+    uCAN1_MSG recCanMsg;
 
     while(1){
         if(canLinux_receive(&recCanMsg, 1)){
             switch (recCanMsg.frame.id){
                 case MC_ID_SCHEDULEUR_MESURES :
-                    pthread_mutex_lock(&train_can.trainInfo_mutex);
-                    train_can.train.vit_mesuree= (int)MESCAN_GetData8(&recCanMsg, cdmc_vitesseMesuree);/** le nbre d'implusion envoyé ici est le nombre d'impulsion entre 2 mesures **/
-                    train_can.train.nb_impulsions+= train_can.train.vit_mesuree;
-                    train_can.train.distance= PAS_ROUE_CODEUSE * (train_can.train.nb_impulsions);
-                    train_can.train.vit_consigne= (float)MESCAN_GetData8(&recCanMsg, cdmc_vitesseConsigneInterne);
+                    pthread_mutex_lock(&(train_can->trainInfo_mutex));
+                    train_can->train.vit_mesuree= (int)MESCAN_GetData8(&recCanMsg, cdmc_vitesseMesuree);/** le nbre d'implusion envoyé ici est le nombre d'impulsion entre 2 mesures **/
+                    train_can->train.nb_impulsions+= train_can->train.vit_mesuree;
+                    train_can->train.distance= PAS_ROUE_CODEUSE * (train_can->train.nb_impulsions);
+                    train_can->train.vit_consigne= (float)MESCAN_GetData8(&recCanMsg, cdmc_vitesseConsigneInterne);
 
                     //fprintf(stderr, "Actualisation: Postition courante : %lf cm, Vit: %d cm/s\n", train.train.distance, train.train.vit_mesuree);
-                    pthread_mutex_unlock(&train_can.trainInfo_mutex);
+                    pthread_mutex_unlock(&(train_can->trainInfo_mutex));
                     break;
                 case MC_ID_EBTL2_RECEIVED : //balise
-                    pthread_mutex_lock(&train_can.trainInfo_mutex);
-                    train_can.train.nb_impulsions = 0;
+                    pthread_mutex_lock(&(train_can->trainInfo_mutex));
+                    train_can->train.nb_impulsions = 0;
 
                     //fprintf(stderr, "\nBalise : %X", recCanMsg.frame.data5);
                     //fprintf(stderr, "Actualisation: Postition courante : %lf cm, Vit: %d cm/s\n\n", train.train.distance, train.train.vit_mesuree);
-                    pthread_mutex_unlock(&train_can.trainInfo_mutex);
+                    pthread_mutex_unlock(&(train_can->trainInfo_mutex));
+                    
+                    // Reset the odometrie
+                    pthread_mutex_lock(&(odo->mutex));
+                    reset_odometrie(odo);
+                    pthread_mutex_unlock(&(odo->mutex));
+
                     break;
                 default :
                     fprintf(stderr, "La trame lue a pour ID %X \n",recCanMsg.frame.id);

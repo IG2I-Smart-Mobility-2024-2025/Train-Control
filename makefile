@@ -20,13 +20,21 @@ DIR_LIBS_UNIRAIL_CAN = $(DIR_LIBS)/unirail/CAN
 # Variables Files
 ARCHIVE= Train_control
 
+# RPI
+RPI_USER = pi
+RPI_IP = 192.168.1.166
+
 # General Rules
 all : directories $(DIR_BIN)/train_control.e
 
 clear :
 	rm -rf bin/*
 
-archive :
+archive : clear
+	tar -czf $(ARCHIVE).tar.gz *
+
+televerse : archive
+	scp $(ARCHIVE).tar.gz $(RPI_USER)@$(RPI_IP):/home/$(RPI_USER)/IG2I-2425/Teo
 
 directories :
 	mkdir -p $(DIR_BIN)

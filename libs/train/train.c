@@ -34,6 +34,15 @@ Train_t * train_init(char id, Position_t position) {
     train->course.steps_code = NULL;
     train->course.current_step = 0;
     train->course.repeat = 0;
+
+    // Initialize the train information
+    t_TrainInfo * train_can = create_train_can();
+    if (train_can == NULL) {
+        free(train);
+        return NULL;
+    }
+    train->train_can = train_can;
+
     return train;
 }
 
