@@ -14,20 +14,15 @@
  * @brief Initialize a train
  * 
  * @param id Train id
- * @param position Train initial position
  * @return Train_t* NULL if an error occured, a pointer to the train otherwise
  */
-Train_t * train_init(char id, Position_t position) {
+Train_t * train_init(char id) {
     // Allocate memory for the train
     Train_t * train = (Train_t *) malloc(sizeof(Train_t));
-    // Check
     if (train == NULL) return NULL;
-    
+
     // Initialize the train
     train->id = id;
-    train->position = position;
-    train->speed = 0;
-    train->distance = 0;
     train->course.size = 0;
     train->course.filename = NULL;
     train->course.steps = NULL;
@@ -35,13 +30,12 @@ Train_t * train_init(char id, Position_t position) {
     train->course.current_step = 0;
     train->course.repeat = 0;
 
-    // Initialize the train information
-    t_TrainInfo * train_can = create_train_can();
-    if (train_can == NULL) {
-        free(train);
-        return NULL;
-    }
-    train->train_can = train_can;
+    // Initialize the can train with the default port
+    train->can_train = create_can_train(NULL, on_beacon_passed);
+    train->can_train->callback_arg = train;
+
+    // Initialize the odometrie 
+    train->odometrie = create_odometrie(NULL, NULL);
 
     return train;
 }
@@ -113,10 +107,24 @@ int load_train_course(Train_t * train, char* filename, int repeat) {
  */
 int delete_train(Train_t * train) {
     if (train == NULL) return -1;
-    if (train->course.steps != NULL) free(train->course.steps);
-    if (train->course.steps_code != NULL) free(train->course.steps_code);
-    if (train->course.filename != NULL) free(train->course.filename);
+
+    // Delete the course
+    for (int i = 0; i < train->course.size; i++) {
+        free(train->course.steps[i]);
+    }
+    free(train->course.steps);
+    free(train->course.steps_code);
+    free(train->course.filename);
+
+    // Delete the can train
+    delete_can_train(train->can_train);
+
+    // Delete the odometrie
+    delete_odometrie(train->odometrie);
+
+    // Free the train
     free(train);
+
     return 0;
 }
 
@@ -127,9 +135,8 @@ int delete_train(Train_t * train) {
  */
 void debug_train(Train_t * train) {
     printf("Train id: %d\n", train->id);
-    printf("Position: (%d, %d, %d)\n", train->position.x, train->position.y, train->position.z);
-    printf("Speed: %d\n", train->speed);
-    printf("Distance: %.2f\n", train->distance);
+    printf("Speed (can): %d\n", train->can_train->can_odometrie.vit_mesuree);
+    printf("Distance (can): %.2f\n", train->can_train->can_odometrie.distance);
     printf("Course current step: [%d] --> %s\n", train->course.current_step, train->course.steps[train->course.current_step]);
     printf("Course size: %d\n", train->course.size);
     printf("Course repeat: %d\n", train->course.repeat);
@@ -234,4 +241,21 @@ void print_train_course (Train_t * train) {
     for (int i = 0; i < train->course.size; i++) {
         printf("Step %d: %s\n", i, train->course.steps[i]);
     }
+}
+
+/**
+ * @brief Fonction de callback appelée lorsqu'une balise est passée
+ * 
+ * @note On passe le train par argument. Pour un système temps réel critique, ce n'est pas optimal.
+ * Il faudrait utiliser une variable globale dans notre cas.
+ * 
+ * @param arg Argument de la fonction (train_t*)
+ */
+void on_beacon_passed(void * arg) {
+    printf("Beacon passed\n");
+    // On récupère le train grâce à un passe passe avec des void*
+    Train_t * train = (Train_t *) arg;
+
+    // On reset l'odométrie
+    reset_odometrie(train->odometrie);
 }

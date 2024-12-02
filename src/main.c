@@ -28,16 +28,19 @@
 
 int main(int argc, char* argv[]) {
     // Vérification du nombre d'arguments
-    if (argc != 2) {
-        printf("Usage: %s <fichier_trajectoire>\n", argv[0]);
+    if (argc != 3) {
+        printf("Usage: %s <id_train> <fichier_trajectoire>\n", argv[0]);
         return 1;
     }
 
+    // Récupération de l'id du train
+    int id_train = atoi(argv[1]);
+
     // Récupération du nom du fichier de trajectoire
-    char* fichier_trajectoire = argv[1];
+    char* fichier_trajectoire = argv[2];
 
     // Initialisation du train
-    Train_t* train = train_init(1, (Position_t) {0, 0, 0});
+    Train_t * train = train_init(id_train);
     if (train == NULL) {
         printf("Erreur lors de l'initialisation du train\n");
         return 1;
@@ -69,7 +72,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Structure train info pour connard
+    // Structure train info pour interface TCP
     train_info * ti = create_train_info(
         train->id,
         train->course.steps_code[train->course.current_step],
@@ -91,13 +94,13 @@ int main(int argc, char* argv[]) {
 
     // On lance le thread d'odométrie
     pthread_t thread_odo;
-    odometrie* odo = create_odometrie(NULL, NULL);
-    pthread_create(&thread_odo, NULL, thread_odometrie, (void*) odo);
+    // odometrie* odo = create_odometrie(NULL, NULL);
+    pthread_create(&thread_odo, NULL, thread_odometrie, (void*) train->odometrie);
 
     // On lance le thread du CAN
     pthread_t thread_can;
-    thread_args args = {train, odo};
-    pthread_create(&thread_can, NULL, lectureCan, (void*) &args);
+    // thread_args args = {train, odo};
+    pthread_create(&thread_can, NULL, lectureCan, (void*) &train->can_train);
 
     while(1);
 
@@ -106,7 +109,7 @@ int main(int argc, char* argv[]) {
     pthread_join(thread_can, NULL);
 
     // Suppression du train
-    // delete_train(train);
+    delete_train(train);
     delete_train_info(ti);
     delete_train_mov_auth(tma);
     close(socket);

@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../can/canTrain.h"
+#include "../odometrie/odometrie.h"
 
 // Structs
 
@@ -29,19 +30,11 @@ typedef struct {
 } Course_t;
 
 typedef struct {
-    char id;                    // Train ID
-    int speed;                  // Train speed
-    Position_t position;        // Train position
-    float distance;             // Train distance [cm]
-    Course_t course;            // Train course
-    t_TrainInfo * train_can;    // Train information
+    char id;                        // Train ID
+    Course_t course;                // Train course
+    can_train_t* can_train;         // Train can interface (contains another odometrie)
+    odometrie_t* odometrie;         // Train odometrie
 } Train_t;
-
-typedef struct {
-    int x;              // X position
-    int y;              // Y position
-    int z;              // Z position
-} Position_t;
 
 // MACROS
 #define COURSE_SIZE(a) (a)->course.size
@@ -54,10 +47,9 @@ typedef struct {
  * @brief Initialize a train
  * 
  * @param id Train id
- * @param position Train initial position
  * @return Train_t* NULL if an error occured, a pointer to the train otherwise
  */
-Train_t * train_init(char id, Position_t position);
+Train_t * train_init(char id);
 
 /**
  * @brief Load a train course from a file
@@ -109,4 +101,14 @@ unsigned char string_to_code(const char* str);
  */
 void print_train_course (Train_t * train);
 
-#endif // "TRAIN_UTILS_H"
+/**
+ * @brief Fonction de callback appelée lorsqu'une balise est passée
+ * 
+ * @note On passe le train par argument. Pour un système temps réel critique, ce n'est pas optimal.
+ * Il faudrait utiliser une variable globale dans notre cas.
+ * 
+ * @param arg Argument de la fonction (train_t*)
+ */
+void on_beacon_passed(void * arg);
+
+#endif // "TRAIN_H"
