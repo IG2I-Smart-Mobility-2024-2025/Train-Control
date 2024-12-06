@@ -23,8 +23,6 @@
 #include <string.h>
 #include "../libs/train/train.h"
 #include "../libs/communication/communication.h"
-#include "../libs/odometrie/odometrie.h"
-#include "../libs/can/canTrain.h"
 
 int main(int argc, char* argv[]) {
     // Vérification du nombre d'arguments
@@ -59,8 +57,8 @@ int main(int argc, char* argv[]) {
     }
 
     // Test de debug
-    debug_train(train);
-    print_train_course(train);
+    // debug_train(train);
+    // print_train_course(train);
 
     // On envoie une requete au RBC
     printf("J'envoie une requete au RBC pour me deplacer\n");
@@ -85,22 +83,25 @@ int main(int argc, char* argv[]) {
     print_train_info(ti);
 
     // On envoie au RBC
-    printf("Fail or pass ? %d\n", send_train_info(socket, ti));
+    // printf("Fail or pass ? %d\n", send_train_info(socket, ti));
 
     train_mov_auth* tma = create_train_mov_auth();
 
-    printf("Fail or pass ? %d\n", recv_train_mov_auth(socket, tma));
+    // printf("Fail or pass ? %d\n", recv_train_mov_auth(socket, tma));
     printf("Length authorized : %2.f\n", tma->length);
 
     // On lance le thread d'odométrie
     pthread_t thread_odo;
     // odometrie* odo = create_odometrie(NULL, NULL);
     pthread_create(&thread_odo, NULL, thread_odometrie, (void*) train->odometrie);
+    // On lance l'odometrie
+    train->odometrie->is_running = 1;
 
     // On lance le thread du CAN
     pthread_t thread_can;
     // thread_args args = {train, odo};
-    pthread_create(&thread_can, NULL, lectureCan, (void*) &train->can_train);
+    train->can_train->can_odometrie.distance = 10;
+    pthread_create(&thread_can, NULL, lectureCan, (void*) train->can_train);
 
     while(1);
 

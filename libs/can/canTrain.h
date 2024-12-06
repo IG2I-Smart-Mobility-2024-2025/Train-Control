@@ -96,4 +96,11 @@ void* lectureCan(void* args);
  */
 int delete_can_train(can_train_t * can_train);
 
+/**
+ * @brief Debug function to print the can train object
+ * 
+ * @param can_train can train object
+ */
+void debug_can_train(can_train_t* can_train);
+
 #endif

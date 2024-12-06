@@ -40,6 +40,7 @@ odometrie_t* create_odometrie(char * ttyFile, void (*anyInputPacketCallback)());
 /**
  * @brief Update the odometrie actual position with the marvelmind position.
  * 
+ * @param odo Odometrie object
  */
 void update_odometrie_position(odometrie_t* odo);
 

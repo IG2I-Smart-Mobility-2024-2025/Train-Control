@@ -41,8 +41,10 @@ odometrie_t* create_odometrie(char * ttyFile, void (*anyInputPacketCallback)()) 
 /**
  * @brief Update the odometrie actual position with the marvelmind position.
  * 
+ * @param odo Odometrie object
  */
 void update_odometrie_position(odometrie_t* odo) {
+    // printf("Update odometrie\n");
     struct PositionValue position;
     if (getPositionFromMarvelmindHedge(odo->hedge, &position)) {
         odo->actual_position.x = position.x;
@@ -97,6 +99,7 @@ void * thread_odometrie(void * arg) {
     odometrie_t* odo = (odometrie_t*) arg;
     while (odo->is_running) {
         // Wait for the mutex
+        // printf("<pthread_mutex_lock> odo mutex\n");
         pthread_mutex_lock(&odo->mutex);
 
         // Update the odometrie
@@ -104,6 +107,7 @@ void * thread_odometrie(void * arg) {
         update_odometrie_distance(odo);
         
         // Release the mutex
+        // printf("<pthread_mutex_unlock> odo mutex\n");
         pthread_mutex_unlock(&odo->mutex);
 
         // Debug

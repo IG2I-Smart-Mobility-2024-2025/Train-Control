@@ -40,7 +40,7 @@ directories :
 	mkdir -p $(DIR_BIN)
 
 # train_control
-$(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_BIN)/tcp_interface.o $(DIR_BIN)/canTrain.o $(DIR_BIN)/odometrie.o $(DIR_LIBS_UNIRAIL_CAN)/canLinux.o $(DIR_BIN)/marvelmind.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_Utilitaire.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarStatusTrain.o $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarTrain.o $(DIR_SRC)/main.c
+$(DIR_BIN)/train_control.e : $(DIR_BIN)/train.o $(DIR_BIN)/tcp_interface.o $(DIR_BIN)/canTrain.o $(DIR_BIN)/odometrie.o $(DIR_BIN)/canLinux.o $(DIR_BIN)/marvelmind.o $(DIR_BIN)/MESCAN1_Utilitaire.o $(DIR_BIN)/MESCAN1_VarStatusTrain.o $(DIR_BIN)/MESCAN1_VarTrain.o $(DIR_SRC)/main.c
 	@echo "--- Compiling train_control ---"
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
@@ -69,3 +69,22 @@ $(DIR_BIN)/canTrain.o : $(DIR_LIBS_CAN)/canTrain.c $(DIR_LIBS_CAN)/canTrain.h
 	@echo "--- Compiling can ---"
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# canLinux
+$(DIR_BIN)/canLinux.o : $(DIR_LIBS_UNIRAIL_CAN)/canLinux.c $(DIR_LIBS_UNIRAIL_CAN)/canLinux.h
+	@echo "--- Compiling canLinux ---"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# MESCAN1_Utilitaire
+$(DIR_BIN)/MESCAN1_Utilitaire.o : $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_Utilitaire.c $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_Utilitaire.h
+	@echo "--- Compiling MESCAN1_Utilitaire"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# MESCAN1_VarStatusTrain.o
+$(DIR_BIN)/MESCAN1_VarStatusTrain.o : $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarStatusTrain.c $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarStatusTrain.h
+	@echo "--- Compiling MESCAN1_VarStatusTrain"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# MESCAN1_VarTrain.o
+$(DIR_BIN)/MESCAN1_VarTrain.o : $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarTrain.c $(DIR_LIBS_UNIRAIL_CAN)/MESCAN1_VarTrain.h
+	@echo "--- Compiling MESCAN1_VarTrain"
+	$(CC) $(CFLAGS) -c $< -o $@

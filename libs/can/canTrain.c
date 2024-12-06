@@ -24,6 +24,7 @@ can_train_t* create_can_train(char * port, callback_function callback) {
     CAN_ODO(res).vit_mesuree = 0;
     CAN_ODO(res).nb_impulsions = 0;
     pthread_mutex_init(&(CAN_ODO(res).can_odometrie_mutex), NULL);
+    // pthread_mutex_unlock(&(CAN_ODO(res).can_odometrie_mutex));  
 
     // Initialize the can port
     initCan(port);
@@ -105,15 +106,21 @@ int writeVitesseConsigne(unsigned int vitesse, unsigned char sense) {
  */
 void updateCanOdometrie(can_odometrie_t* can_odo, uCAN1_MSG recCanMsg) {
     // On prend la mutex pour eviter les problemes de concurrence
+    // printf("<pthread_mutex_lock> can odometrie mutex\n");
     pthread_mutex_lock(&(can_odo->can_odometrie_mutex));
 
     // maj des informations du train
+    // printf("<updateCanOdometrie> vit_mesuree\n");
     can_odo->vit_mesuree = (int)MESCAN_GetData8(&recCanMsg, cdmc_vitesseMesuree);/** le nbre d'implusion envoyé ici est le nombre d'impulsion entre 2 mesures **/
+    // printf("<updateCanOdometrie> nb_impulsions\n");
     can_odo->nb_impulsions += can_odo->vit_mesuree;
+    // printf("<updateCanOdometrie> distance\n");
     can_odo->distance = PAS_ROUE_CODEUSE * (can_odo->nb_impulsions);
+    // printf("<updateCanOdometrie> vit_consigne\n");
     can_odo->vit_consigne = (float)MESCAN_GetData8(&recCanMsg, cdmc_vitesseConsigneInterne);
 
     // On rend la mutex
+    // printf("<pthread_mutex_unlock> can odometrie mutex\n");
     pthread_mutex_unlock(&(can_odo->can_odometrie_mutex));
 }
 
@@ -128,7 +135,7 @@ void* lectureCan(void * args) {
     // Definition d'une variable de type message can
     uCAN1_MSG recCanMsg;
 
-    while(1){
+    while(1) {
         if(canLinux_receive(&recCanMsg, 1)){
             switch (recCanMsg.frame.id){
                 // Pas de mesure
@@ -167,4 +174,20 @@ int delete_can_train(can_train_t * can_train) {
     pthread_mutex_destroy(&(CAN_ODO(can_train).can_odometrie_mutex));
     free(can_train);
     return 0;
+}
+
+/**
+ * @brief Debug function to print the can train object
+ * 
+ * @param can_train can train object
+ */
+void debug_can_train(can_train_t* can_train) {
+    printf("can_odometrie_t:\n");
+    printf("distance: %f\n", CAN_ODO(can_train).distance);
+    printf("vit_consigne: %f\n", CAN_ODO(can_train).vit_consigne);
+    printf("vit_mesuree: %d\n", CAN_ODO(can_train).vit_mesuree);
+    printf("nb_impulsions: %d\n", CAN_ODO(can_train).nb_impulsions);
+    printf("can_odometrie_mutex: %p\n", &(CAN_ODO(can_train).can_odometrie_mutex));
+    printf("callback: %p\n", can_train->callback);
+    printf("callback_arg: %p\n", can_train->callback_arg);
 }
