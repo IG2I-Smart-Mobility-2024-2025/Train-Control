@@ -58,10 +58,7 @@ int main(int argc, char* argv[]) {
 
     // Test de debug
     // debug_train(train);
-    // print_train_course(train);
-
-    // On envoie une requete au RBC
-    printf("J'envoie une requete au RBC pour me deplacer\n");
+    print_train_course(train);
 
     // On configure la socket
     int socket = init_client_socket("192.168.1.200");
@@ -80,15 +77,8 @@ int main(int argc, char* argv[]) {
         train->course.size
     );
 
-    print_train_info(ti);
-
     // On envoie au RBC
-    // printf("Fail or pass ? %d\n", send_train_info(socket, ti));
-
-    train_mov_auth* tma = create_train_mov_auth();
-
-    // printf("Fail or pass ? %d\n", recv_train_mov_auth(socket, tma));
-    printf("Length authorized : %2.f\n", tma->length);
+    train_mov_auth* tma = NULL;
 
     // On lance le thread d'odométrie
     pthread_t thread_odo;
@@ -99,11 +89,69 @@ int main(int argc, char* argv[]) {
 
     // On lance le thread du CAN
     pthread_t thread_can;
-    // thread_args args = {train, odo};
-    train->can_train->can_odometrie.distance = 10;
     pthread_create(&thread_can, NULL, lectureCan, (void*) train->can_train);
 
-    while(1);
+    // Routine pour aller jusqu'à la première balise
+    while(!(train->flag_init))
+        writeVitesseConsigne(10, 1);
+
+    // Commande de déplacement
+    tma = create_train_mov_auth();
+    int flag = 1;
+
+    while(flag) {
+        // On demande au RBC la distance autorisee    
+        send_train_info(socket, ti);
+        recv_train_mov_auth(socket, tma); // TODO : si le serveur met trop de temps à répondre et que le train roule, potentiel accident. Solution : appel non bloquant ?
+
+        // printf("Troncons\tMax speeds\n");
+        // for (int i = 0 ; i < train->course.size ; i++)
+            // printf("%s\t%2.f\n", train->course.steps[i], tma->max_speeds[i]);
+
+        printf("+--------------------------+\n");
+        printf("| LA : %2.f\n", tma->length);
+        printf("| Dist : %2.f\n", train->can_train->can_odometrie.distance);
+        printf("| Max speed : %2.f\n", tma->max_speeds[train->course.current_step]);
+        printf("| Current edge : %s\n", train->course.steps[train->course.current_step]);
+        printf("| Current Step : %d\n", train->course.current_step);
+
+        // Si la distance autorisée n'est pas dépassée
+        pthread_mutex_lock(&(train->can_train->can_odometrie.can_odometrie_mutex));
+        if (train->can_train->can_odometrie.distance < tma->length) {
+            // On se déplace en avant
+            train->is_running = 1;
+            // writeVitesseLimite((int)tma->max_speeds[train->course.current_step]);
+            writeVitesseLimite(30); // TODO : Ya du 0 dans ce que m'envoie louis, bizarre
+            writeVitesseConsigne(20, 1); // TODO : 20 c caca, il faut asservir la vitesse
+            
+            // MAJ distance de ti
+            ti->train_position = train->can_train->can_odometrie.distance;
+            // MAJ vitesse de ti
+            ti->train_velocity = (float) train->can_train->can_odometrie.vit_mesuree;
+            // MAJ troncon actuel de ti
+            ti->current_edge_id = train->course.steps_code[train->course.current_step];
+            // MAJ des troncons à parcourir de ti
+            if (train->course.current_step == 0) {
+                ti->next_edges = train->course.steps_code;
+                ti->next_edges_count = train->course.size;
+            }
+            // Pour avoir aussi le troncon précédent
+            else {
+                ti->next_edges = &(train->course.steps_code[train->course.current_step-1]);
+                ti->next_edges_count = train->course.size - train->course.current_step + 1;
+            }
+        }
+        // Sinon
+        else {
+            train->is_running = 0;
+            // On demande au moteur de stop
+            writeVitesseConsigne(0, 1);
+            flag = 0; // on sort de la boucle
+        }
+        pthread_mutex_unlock(&(train->can_train->can_odometrie.can_odometrie_mutex));
+
+        usleep(100);
+    };
 
     // On attend la fin des threads
     pthread_join(thread_odo, NULL);

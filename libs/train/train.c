@@ -29,6 +29,8 @@ Train_t * train_init(char id) {
     train->course.steps_code = NULL;
     train->course.current_step = 0;
     train->course.repeat = 0;
+    train->flag_init = 0;
+    train->is_running = 0;
 
     // Initialize the can train with the default port
     train->can_train = create_can_train(NULL, on_beacon_passed);
@@ -253,9 +255,20 @@ void print_train_course (Train_t * train) {
  */
 void on_beacon_passed(void * arg) {
     printf("Beacon passed\n");
+
     // On récupère le train grâce à un passe passe avec des void*
     Train_t * train = (Train_t *) arg;
 
-    // On reset l'odométrie
-    reset_odometrie(train->odometrie);
+    // Pour la séquence d'init
+    if (!(train->flag_init))
+        train->flag_init = 1;
+
+    else if (train->is_running) {
+        // On reset l'odométrie
+        reset_odometrie(train->odometrie);
+
+        // Next step
+        train->course.current_step++;
+    }
+
 }

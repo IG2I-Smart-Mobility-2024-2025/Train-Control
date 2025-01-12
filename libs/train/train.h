@@ -31,6 +31,8 @@ typedef struct {
 
 typedef struct {
     char id;                        // Train ID
+    char flag_init;                 // Flag for init sequence
+    char is_running;                 // Flag for when the train is running
     Course_t course;                // Train course
     can_train_t* can_train;         // Train can interface (contains another odometrie)
     odometrie_t* odometrie;         // Train odometrie
