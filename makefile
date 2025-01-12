@@ -22,7 +22,7 @@ ARCHIVE= Train_control
 
 # RPI
 RPI_USER = pi
-RPI_IP = 192.168.1.166
+RPI_IP = 192.168.1.167
 
 # General Rules
 all : directories $(DIR_BIN)/train_control.e
