@@ -25,7 +25,7 @@ typedef void (*callback_function)(void* arg);
 
 typedef struct {
 	pthread_mutex_t can_odometrie_mutex;
-	float distance;  // en cm
+	float distance;  // en cm par rapport à la dernière balise
 	float vit_consigne;
 	int vit_mesuree;
 	int nb_impulsions;
@@ -68,7 +68,7 @@ int writeVitesseLimite(float vitesseLimite);
  * @brief Ecrit la vitesse consigne du train sur le bus can
  * 
  * @param vitesse Vitesse consigne
- * @param sense Sens de deplacement
+ * @param sense Sens de deplacement (1 : en avant, 0 : en arrière)
  * @return int 1 si l'envoi a reussi, 0 sinon
  */
 int writeVitesseConsigne(unsigned int vitesse, unsigned char sense);

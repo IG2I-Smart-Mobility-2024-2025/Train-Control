@@ -110,13 +110,9 @@ void updateCanOdometrie(can_odometrie_t* can_odo, uCAN1_MSG recCanMsg) {
     pthread_mutex_lock(&(can_odo->can_odometrie_mutex));
 
     // maj des informations du train
-    // printf("<updateCanOdometrie> vit_mesuree\n");
     can_odo->vit_mesuree = (int)MESCAN_GetData8(&recCanMsg, cdmc_vitesseMesuree);/** le nbre d'implusion envoyé ici est le nombre d'impulsion entre 2 mesures **/
-    // printf("<updateCanOdometrie> nb_impulsions\n");
     can_odo->nb_impulsions += can_odo->vit_mesuree;
-    // printf("<updateCanOdometrie> distance\n");
     can_odo->distance = PAS_ROUE_CODEUSE * (can_odo->nb_impulsions);
-    // printf("<updateCanOdometrie> vit_consigne\n");
     can_odo->vit_consigne = (float)MESCAN_GetData8(&recCanMsg, cdmc_vitesseConsigneInterne);
 
     // On rend la mutex
@@ -146,7 +142,7 @@ void* lectureCan(void * args) {
                     
                     break;
                 // On passe sur une balise
-                case MC_ID_EBTL2_RECEIVED : //balise
+                case MC_ID_EBTL2_RECEIVED : // balise
                     
                     // On remet le nombre d'impulsions a 0
                     CAN_ODO(can_train).nb_impulsions = 0;
