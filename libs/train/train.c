@@ -281,7 +281,7 @@ void on_beacon_passed(void * arg) {
  */
 void* deceleration_thread(void* arg) {
     deceleration_params_t* params = (deceleration_params_t*)arg;
-    float increment = 0.02; // m/s
+    float increment = params->alpha * 0.05; // m/s
     struct timespec sleep_time = {0, 50000000}; // 50ms en nanosecondes
     
     // Boucle de décélération

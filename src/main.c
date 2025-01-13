@@ -77,21 +77,20 @@ int main(int argc, char* argv[]) {
         train->course.size
     );
 
-    // On envoie au RBC
+    // On crée la structure de mouvement autorisé
     train_mov_auth* tma = NULL;
 
     // On lance le thread d'odométrie
     pthread_t thread_odo;
-    // odometrie* odo = create_odometrie(NULL, NULL);
     pthread_create(&thread_odo, NULL, thread_odometrie, (void*) train->odometrie);
-    // On lance l'odometrie
+    // On lance l'odometrie à l'aide du flag
     train->odometrie->is_running = 1;
 
     // On lance le thread du CAN
     pthread_t thread_can;
     pthread_create(&thread_can, NULL, lectureCan, (void*) train->can_train);
 
-    // Routine pour aller jusqu'à la première balise
+    // Routine bete pour aller jusqu'à la première balise avant de lancer le déplacement
     while(!(train->flag_init))
         writeVitesseConsigne(10, 1);
 
@@ -100,10 +99,12 @@ int main(int argc, char* argv[]) {
     int flag = 1;
 
     while(flag) {
-        // On demande au RBC la distance autorisee    
+        // On demande au RBC la distance autorisee et la vitesse max
+        // En plus on lui envoie les informations du train (train_info)
         send_train_info(socket, ti);
         recv_train_mov_auth(socket, tma); // TODO : si le serveur met trop de temps à répondre et que le train roule, potentiel accident. Solution : appel non bloquant ?
 
+        // Affichage des informations (DEBUG)
         // printf("Troncons\tMax speeds\n");
         // for (int i = 0 ; i < train->course.size ; i++)
             // printf("%s\t%2.f\n", train->course.steps[i], tma->max_speeds[i]);
@@ -122,7 +123,7 @@ int main(int argc, char* argv[]) {
             train->is_running = 1;
             // writeVitesseLimite((int)tma->max_speeds[train->course.current_step]);
             writeVitesseLimite(30); // TODO : Ya du 0 dans ce que m'envoie louis, bizarre
-            writeVitesseConsigne(20, 1); // TODO : 20 c caca, il faut asservir la vitesse
+            writeVitesseConsigne(20, 1); // TODO : 20 n'est pas la bonne solution, il faut asservir la vitesse
             
             // MAJ distance de ti
             ti->train_position = train->can_train->can_odometrie.distance;
@@ -143,11 +144,20 @@ int main(int argc, char* argv[]) {
         }
         // Sinon
         else {
-            train->is_running = 0;
-            // On demande au moteur de stop
-            writeVitesseConsigne(0, 1);
-            flag = 0; // on sort de la boucle
+            // // On arrête le train
+            // train->is_running = 0;
+            // // TODO : faut il arreter l'odometrie ?
+            // // On demande au moteur de stop
+            // writeVitesseConsigne(0, 1);
+            // flag = 0; // on sort de la boucle
+
+            // Démarre la décélération
+            deceleration_params_t* params = start_deceleration(train, tma->max_speeds[train->course.current_step], 1, tma->length, 0);
+
+            // On attend la fin de la décélération
+            stop_deceleration(params);
         }
+        // On déverrouille la mutex
         pthread_mutex_unlock(&(train->can_train->can_odometrie.can_odometrie_mutex));
 
         usleep(100);
