@@ -155,4 +155,12 @@ void* deceleration_thread(void* arg);
  */
 deceleration_params_t* start_deceleration(Train_t* train, float max_speed, float alpha, float distance, float security_distance);
 
+/**
+ * @brief Coupe le processus de décélération
+ * 
+ * @param params Paramètres de décélération
+ * @return int 0 si tout s'est bien passé, -1 sinon
+ */
+int stop_deceleration(deceleration_params_t* params);
+
 #endif // "TRAIN_H"
