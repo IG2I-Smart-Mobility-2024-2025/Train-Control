@@ -272,3 +272,122 @@ void on_beacon_passed(void * arg) {
     }
 
 }
+
+/**
+ * @brief Fonction exécutée par le thread de décélération
+ * 
+ * @param arg Pointeur vers la structure deceleration_params_t
+ * @return void* NULL
+ */
+void* deceleration_thread(void* arg) {
+    deceleration_params_t* params = (deceleration_params_t*)arg;
+    float increment = 0.02; // m/s
+    struct timespec sleep_time = {0, 50000000}; // 50ms en nanosecondes
+    
+    // Boucle de décélération
+    while (1) {
+        // Mutex
+        pthread_mutex_lock(&params->mutex);
+        
+        // Arrêt du thread via le paramètre is_running
+        if (!params->is_running) {
+            pthread_mutex_unlock(&params->mutex);
+            break;
+        }
+        
+        // Calcul de la vitesse actuelle et de la vitesse autorisée
+        float current_speed = params->train->can_train->can_odometrie.vit_mesuree;
+        float speed_aut = sqrtf(2 * params->alpha * (params->distance - params->security_distance));
+        
+        // Vitesse maximale
+        if (speed_aut > params->max_speed)
+            speed_aut = params->max_speed;
+            
+        // Décélération
+        if (current_speed > speed_aut) {
+            current_speed -= increment;
+            if (current_speed < speed_aut)
+                current_speed = speed_aut;
+            if (current_speed < 0)
+                current_speed = 0;
+                
+            writeVitesseConsigne((unsigned int)current_speed, 1);
+            params->train->can_train->can_odometrie.vit_consigne = current_speed;
+        }
+        
+        // Mutex
+        pthread_mutex_unlock(&params->mutex);
+        // Attente
+        nanosleep(&sleep_time, NULL);
+    }
+    return NULL;
+}
+
+/**
+ * @brief Lance le processus de décélération
+ * 
+ * @param train Train à décélérer
+ * @param max_speed Vitesse maximale autorisée
+ * @param alpha Coefficient de décélération (m/s^2)
+ * @param distance Distance à parcourir avant l'arrêt
+ * @param security_distance Distance de sécurité
+ * @return deceleration_params_t* Paramètres de décélération
+ */
+deceleration_params_t* start_deceleration(Train_t* train, float max_speed, float alpha, float distance, float security_distance) {
+    
+    // Vérification des paramètres
+    if (train == NULL || max_speed < 0 || alpha < 0)
+        return NULL;
+    
+    // Allocation de la structure de paramètres
+    deceleration_params_t* params = malloc(sizeof(deceleration_params_t));
+    if (params == NULL)
+        return NULL;
+    
+    // Initialisation des paramètres
+    params->train = train;
+    params->max_speed = max_speed;
+    params->alpha = alpha;
+    params->distance = distance;
+    params->security_distance = security_distance;
+    params->is_running = 1;
+    
+    // Initialisation du mutex
+    if (pthread_mutex_init(&params->mutex, NULL) != 0) {
+        free(params);
+        return NULL;
+    }
+    
+    // Création du thread
+    if (pthread_create(&params->thread_id, NULL, deceleration_thread, params) != 0) {
+        pthread_mutex_destroy(&params->mutex);
+        free(params);
+        return NULL;
+    }
+    
+    return params;
+}
+
+/**
+ * @brief Coupe le processus de décélération
+ * 
+ * @param params Paramètres de décélération
+ * @return int 0 si tout s'est bien passé, -1 sinon
+ */
+int stop_deceleration(deceleration_params_t* params) {
+    // Vérification des paramètres
+    if (params == NULL)
+        return -1;
+    
+    // Arrêt du thread
+    pthread_mutex_lock(&params->mutex);
+    params->is_running = 0;
+    pthread_mutex_unlock(&params->mutex);
+    
+    // Attente de la fin du thread
+    pthread_join(params->thread_id, NULL);
+    pthread_mutex_destroy(&params->mutex);
+    free(params);
+    
+    return 0;
+}
